@@ -1,91 +1,43 @@
- 
+import numpy as np
+import pandas as pd
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
 
-# Import necessary libraries 
+# Step 1: Generate 100 random values in the range [0,1]
+x_values = np.random.rand(100)
 
-from sklearn.datasets import load_iris 
+# Step 2: Label the first 50 points
+labels = np.array(["Class1" if x <= 0.5 else "Class2" for x in x_values[:50]])
 
-from sklearn.decomposition import PCA 
+# Step 3 Create Training Data 
+X_train=x_values[:50].reshape(-1,1)
+y_train=labels
 
-from sklearn.preprocessing import StandardScaler 
+# Step 4 Create DataFrame for Training Data 
+df1=pd.DataFrame({"Points":[f"x{i+1}" for i in range(50)],"Value":x_values[:50],"Label":labels})
+print(df1)
 
-import pandas as pd 
+# Step 5 Create Testing Data 
+X_test=x_values[50:].reshape(-1,1)
 
-import matplotlib.pyplot as plt 
+#Step 6 Create the actual Label for the remaining 50 Points
+true_labels = np.array(["Class1" if x <= 0.5 else "Class2" for x in x_values[50:]])
 
- 
+# Step 7: Perform KNN classification for different values of k
+k_values = [1, 2, 3, 4, 5, 20, 30]
+results = {}
+accuracies = {}
 
-# Step 1: Load the Iris dataset 
+for k in k_values:
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train, y_train)
+    predictions = knn.predict(X_test)
+    results[k] = predictions
+    # Calculate accuracy
+    accuracy = accuracy_score(true_labels, predictions) * 100
+    accuracies[k] = accuracy
+    print(f"Accuracy for k={k}: {accuracy:.2f}%")
 
-iris = load_iris() 
-
-features = iris.data  # The 4 features: Sepal Length, Sepal Width, Petal Length, Petal Width 
-
-target = iris.target  # The target class (species) [0->'setosa', 1->'versicolor' and 2->'virginica'] 
-
-#print(iris.target_names) 
-
-iris_df=pd.DataFrame(data=features,columns=['Sepal Length', 'Sepal Width', 'Petal Length', 'Petal Width']) 
-
-iris_df['Target']=target 
-
-iris_df.head() 
-
- 
-
- 
-
-# Step 2: Standardize the features 
-
-#scaler = StandardScaler() 
-
-#features_standardized = scaler.fit_transform(features) 
-
-features_standardized = StandardScaler().fit_transform(features) 
-
-iris_std_df=pd.DataFrame(data=features_standardized,columns=['Sepal Length', 'Sepal Width', 'Petal Length', 'Petal Width']) 
-
-iris_std_df['Target']=target 
-
-iris_std_df.head() 
-
- 
-
-# Step 3: Apply PCA to reduce to 2 components 
-
-pca = PCA(n_components=2) 
-
-features_pca = pca.fit_transform(features_standardized) 
-
-# Step 4: Create a DataFrame for the reduced data 
-
-pca_df = pd.DataFrame(data=features_pca, columns=["Principal Component 1", "Principal Co mponent 2"]) 
-
-pca_df["Target"] = target 
-
-print(pca_df) 
-
- 
-
-# Step 5: Visualize the results plt.scatter(x,y,label,color,..) method 2 
-
-colors = ['red', 'green', 'blue'] 
-
-labels = iris.target_names 
-
-plt.figure(figsize=(8, 6)) 
-
-for i in range(len(colors)): 
-
-    plt.scatter(features_pca[target == i, 0], features_pca[target == i, 1], color=colors[i], label=labels[i]) 
-
-plt.xlabel('Principal Component 1') 
-
-plt.ylabel('Principal Component 2') 
-
-plt.title('PCA on Iris Dataset (Dimensionality Reduction)') 
-
-plt.legend() 
-
-plt.grid() 
-
-plt.show()
+# Step 8 Create a DataFrame for remaining 50 points for k=2 with Predicted label and actual label 
+df2=pd.DataFrame({"Points":[f"x{i+1}" for i in range(50,100)],"actual labels":true_labels,"Predicted Labels": results[2]})
+print(df2)
