@@ -1,0 +1,42 @@
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.datasets import load_breast_cancer
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+
+#Load the Wisconsin Breast Cancer dataset
+data = load_breast_cancer()
+df = pd.DataFrame(data.data, columns=data.feature_names)
+print(df)
+
+
+scaler = StandardScaler()
+ df_scaled = scaler.fit_transform(df)
+
+
+
+# Apply K-Means clustering
+k = 2  # Since we have benign and malignant cases
+kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+kmeans.fit(df_scaled)
+labels = kmeans.labels_
+print(labels)
+
+# Reduce dimensions using PCA for visualization
+pca = PCA(n_components=2)
+df_pca = pca.fit_transform(df_scaled)
+
+# Create a DataFrame for visualization
+df_visual = pd.DataFrame(df_pca, columns=['PC1', 'PC2'])
+df_visual['Cluster'] = labels
+
+# Plot the clusters
+plt.figure(figsize=(8, 6))
+sns.scatterplot(x='PC1', y='PC2', hue=df_visual['Cluster'], palette='Set1', data=df_visual)
+plt.title('K-Means Clustering on Wisconsin Breast Cancer Dataset')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.legend(title='Cluster')
+plt.show()
