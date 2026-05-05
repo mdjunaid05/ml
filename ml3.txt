@@ -1,91 +1,43 @@
- 
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn import datasets
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
-# Import necessary libraries 
+# Step 1: Load the Iris Dataset
+iris = datasets.load_iris()
+X = iris.data  # Extracting feature matrix (4D data)
+y = iris.target  # Extracting labels (0, 1, 2 representing three iris species)
+print(X[1:5,:])
+print(y[1:10])
 
-from sklearn.datasets import load_iris 
+# Step 2: Standardizing the Data
+# PCA works best when data is standardized (mean = 0, variance = 1)
+X_scaled = StandardScaler().fit_transform(X)
+print(X_scaled[1:5,:])
 
-from sklearn.decomposition import PCA 
+# Step 6: Applying PCA to Reduce Dimensionality to 2D
+# We reduce 4D data to 2D for visualization while retaining maximum variance
+pca = PCA(n_components=2)  # We choose 2 components because we want to visualize
+X_pca = pca.fit_transform(X_scaled)  # Transform data into principal components
+Print(X_pca)
+# Step 7: Understanding Variance Explained
+# PCA provides the percentage of variance retained in each principal component
+explained_variance = pca.explained_variance_ratio_
+print(f"Explained Variance by PC1: {explained_variance[0]:.2f}")
+print(f"Explained Variance by PC2: {explained_variance[1]:.2f}")
 
-from sklearn.preprocessing import StandardScaler 
+# Step 8: Visualizing the Transformed Data
+# We plot the 2D representation of the Iris dataset after PCA transformation
+plt.figure(figsize=(8, 6))
+for i in range(len(colors)):
+    plt.scatter(X_pca[y == i, 0], X_pca[y == i, 1], color=colors[i], label=labels[i])
 
-import pandas as pd 
-
-import matplotlib.pyplot as plt 
-
- 
-
-# Step 1: Load the Iris dataset 
-
-iris = load_iris() 
-
-features = iris.data  # The 4 features: Sepal Length, Sepal Width, Petal Length, Petal Width 
-
-target = iris.target  # The target class (species) [0->'setosa', 1->'versicolor' and 2->'virginica'] 
-
-#print(iris.target_names) 
-
-iris_df=pd.DataFrame(data=features,columns=['Sepal Length', 'Sepal Width', 'Petal Length', 'Petal Width']) 
-
-iris_df['Target']=target 
-
-iris_df.head() 
-
- 
-
- 
-
-# Step 2: Standardize the features 
-
-#scaler = StandardScaler() 
-
-#features_standardized = scaler.fit_transform(features) 
-
-features_standardized = StandardScaler().fit_transform(features) 
-
-iris_std_df=pd.DataFrame(data=features_standardized,columns=['Sepal Length', 'Sepal Width', 'Petal Length', 'Petal Width']) 
-
-iris_std_df['Target']=target 
-
-iris_std_df.head() 
-
- 
-
-# Step 3: Apply PCA to reduce to 2 components 
-
-pca = PCA(n_components=2) 
-
-features_pca = pca.fit_transform(features_standardized) 
-
-# Step 4: Create a DataFrame for the reduced data 
-
-pca_df = pd.DataFrame(data=features_pca, columns=["Principal Component 1", "Principal Co mponent 2"]) 
-
-pca_df["Target"] = target 
-
-print(pca_df) 
-
- 
-
-# Step 5: Visualize the results plt.scatter(x,y,label,color,..) method 2 
-
-colors = ['red', 'green', 'blue'] 
-
-labels = iris.target_names 
-
-plt.figure(figsize=(8, 6)) 
-
-for i in range(len(colors)): 
-
-    plt.scatter(features_pca[target == i, 0], features_pca[target == i, 1], color=colors[i], label=labels[i]) 
-
-plt.xlabel('Principal Component 1') 
-
-plt.ylabel('Principal Component 2') 
-
-plt.title('PCA on Iris Dataset (Dimensionality Reduction)') 
-
-plt.legend() 
-
-plt.grid() 
-
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.title('PCA on Iris Dataset (Dimensionality Reduction)')
+plt.legend()
+plt.grid()
 plt.show()
