@@ -1,91 +1,66 @@
- 
+# Importing necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# Import necessary libraries 
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
-from sklearn.datasets import load_iris 
+from sklearn.tree import export_graphviz
+from IPython.display import Image
+import pydotplus
 
-from sklearn.decomposition import PCA 
+import warnings
+warnings.filterwarnings('ignore')
 
-from sklearn.preprocessing import StandardScaler 
+data = pd.read_csv(r'Breast Cancer Dataset.csv')
+data.head()
+data.shape
+data.info()
+data.diagnosis.unique()
+#Data Preprocessing
+#Data Cleaning
+data.isnull().sum()
+df = data.drop(['id'], axis=1)
+df['diagnosis'] = df['diagnosis'].map({'M':1, 'B':0}) # Malignant:1, Benign:0
+X = df.drop('diagnosis', axis=1)  # Drop the 'diagnosis' column (target)
+y = df['diagnosis']
+# Split the dataset into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Fit the decision tree model
+model = DecisionTreeClassifier(criterion='entropy') #criteria = gini, entropy
+model.fit(X_train, y_train)
+model
+y_pred = model.predict(X_test)
+y_pred
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred) * 100
+classification_rep = classification_report(y_test, y_pred)
 
-import pandas as pd 
+# Print the results
+print("Accuracy:", accuracy)
+print("Classification Report:\n", classification_rep)
+new = [[12.5, 19.2, 80.0, 500.0, 0.085, 0.1, 0.05, 0.02, 0.17, 0.06,
+     0.4, 1.0, 2.5, 40.0, 0.006, 0.02, 0.03, 0.01, 0.02, 0.003,
+     16.0, 25.0, 105.0, 900.0, 0.13, 0.25, 0.28, 0.12, 0.29, 0.08]]
+y_pred = model.predict(new)
 
-import matplotlib.pyplot as plt 
+# Output the prediction (0 = Benign, 1 = Malignant)
+if y_pred[0] == 0:
+    print("Prediction: Benign")
+else:
+    print("Prediction: Malignant")
+# Export the tree to DOT format
+dot_data = export_graphviz(model,feature_names=X_train.columns,filled=True,rounded=True)
 
- 
+# Convert DOT data to a graph
+graph = pydotplus.graph_from_dot_data(dot_data)  
 
-# Step 1: Load the Iris dataset 
-
-iris = load_iris() 
-
-features = iris.data  # The 4 features: Sepal Length, Sepal Width, Petal Length, Petal Width 
-
-target = iris.target  # The target class (species) [0->'setosa', 1->'versicolor' and 2->'virginica'] 
-
-#print(iris.target_names) 
-
-iris_df=pd.DataFrame(data=features,columns=['Sepal Length', 'Sepal Width', 'Petal Length', 'Petal Width']) 
-
-iris_df['Target']=target 
-
-iris_df.head() 
-
- 
-
- 
-
-# Step 2: Standardize the features 
-
-#scaler = StandardScaler() 
-
-#features_standardized = scaler.fit_transform(features) 
-
-features_standardized = StandardScaler().fit_transform(features) 
-
-iris_std_df=pd.DataFrame(data=features_standardized,columns=['Sepal Length', 'Sepal Width', 'Petal Length', 'Petal Width']) 
-
-iris_std_df['Target']=target 
-
-iris_std_df.head() 
-
- 
-
-# Step 3: Apply PCA to reduce to 2 components 
-
-pca = PCA(n_components=2) 
-
-features_pca = pca.fit_transform(features_standardized) 
-
-# Step 4: Create a DataFrame for the reduced data 
-
-pca_df = pd.DataFrame(data=features_pca, columns=["Principal Component 1", "Principal Co mponent 2"]) 
-
-pca_df["Target"] = target 
-
-print(pca_df) 
-
- 
-
-# Step 5: Visualize the results plt.scatter(x,y,label,color,..) method 2 
-
-colors = ['red', 'green', 'blue'] 
-
-labels = iris.target_names 
-
-plt.figure(figsize=(8, 6)) 
-
-for i in range(len(colors)): 
-
-    plt.scatter(features_pca[target == i, 0], features_pca[target == i, 1], color=colors[i], label=labels[i]) 
-
-plt.xlabel('Principal Component 1') 
-
-plt.ylabel('Principal Component 2') 
-
-plt.title('PCA on Iris Dataset (Dimensionality Reduction)') 
-
-plt.legend() 
-
-plt.grid() 
-
+# Display the graph
+Image(graph.create_png())
+# Visualize the Decision Tree (optional)
+plt.figure(figsize=(12, 8))
+plot_tree(model, filled=True, feature_names=X.columns, class_names=['Benign', 'Malignant'], rounded=True)
 plt.show()
