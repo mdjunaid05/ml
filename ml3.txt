@@ -28,7 +28,8 @@ Print(X_pca)
 explained_variance = pca.explained_variance_ratio_
 print(f"Explained Variance by PC1: {explained_variance[0]:.2f}")
 print(f"Explained Variance by PC2: {explained_variance[1]:.2f}")
-
+colors = ['red', 'blue', 'green']  # Added: Define colors for each species
+labels = ['Setosa', 'Versicolor', 'Virginica'] 
 # Step 8: Visualizing the Transformed Data
 # We plot the 2D representation of the Iris dataset after PCA transformation
 plt.figure(figsize=(8, 6))
