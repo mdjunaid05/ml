@@ -1,0 +1,73 @@
+import numpy as np 
+
+import matplotlib.pyplot as plt 
+
+from sklearn.model_selection import train_test_split 
+
+from sklearn.naive_bayes import GaussianNB 
+
+from sklearn.metrics import accuracy_score 
+
+ 
+
+# Load the dataset locally 
+
+data = np.load('olivetti_faces_offline.npz') 
+
+images = data['images'] 
+
+targets = data['target'] 
+
+ 
+
+# Display first 20 faces with IDs(optional) 
+
+plt.figure(figsize=(10, 8)) 
+
+for i in range(20): 
+
+    plt.subplot(4, 5, i + 1) 
+
+    plt.imshow(images[i], cmap='gray') 
+
+    plt.title(f"ID: {targets[i]}") 
+
+    plt.axis('off') 
+
+plt.tight_layout() 
+
+plt.show() 
+
+ 
+
+# Flatten the images for training (Convert 3D to 2D) 
+
+#X = images.reshape((400, 4096))  
+
+X = images.reshape((images.shape[0], -1))  # (400, 4096) 
+
+y = targets 
+
+ 
+
+# Train-test split 
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, stratify=y, random_state=42) 
+
+ 
+
+# Train Naive Bayes classifier 
+
+model = GaussianNB() 
+
+model.fit(X_train, y_train) 
+
+ 
+
+# Predict and evaluate 
+
+y_pred = model.predict(X_test) 
+
+accuracy = accuracy_score(y_test, y_pred) 
+
+print(f"Accuracy : {accuracy * 100:.2f}%") 
