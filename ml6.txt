@@ -1,91 +1,34 @@
- 
+import numpy as np
+import matplotlib.pyplot as plt
 
-# Import necessary libraries 
+def gaussian_kernel(x, x_query, tau):
+    return np.exp(- (x - x_query) ** 2 / (2 * tau ** 2))
 
-from sklearn.datasets import load_iris 
+def locally_weighted_regression(X, y, x_query, tau):
+    X_b = np.c_[np.ones(len(X)), X]  # Add bias term (Intercept)
+    x_query_b = np.array([1, x_query])  # Query point with bias term
+    W = np.diag(gaussian_kernel(X, x_query, tau))  # Compute weights
+    # Compute theta: (X^T W X)^-1 X^T W y
+    theta = np.linalg.inv(X_b.T @ W @ X_b) @ X_b.T @ W @ y
+    return x_query_b @ theta  # Return prediction
 
-from sklearn.decomposition import PCA 
+# Complex Dataset
+X = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+y = np.array([1, 3, 2, 4, 3.5, 5, 6, 7, 6.5, 8])
 
-from sklearn.preprocessing import StandardScaler 
+# Query points for LWR
+X_query = np.linspace(1, 10, 100)
 
-import pandas as pd 
-
-import matplotlib.pyplot as plt 
-
- 
-
-# Step 1: Load the Iris dataset 
-
-iris = load_iris() 
-
-features = iris.data  # The 4 features: Sepal Length, Sepal Width, Petal Length, Petal Width 
-
-target = iris.target  # The target class (species) [0->'setosa', 1->'versicolor' and 2->'virginica'] 
-
-#print(iris.target_names) 
-
-iris_df=pd.DataFrame(data=features,columns=['Sepal Length', 'Sepal Width', 'Petal Length', 'Petal Width']) 
-
-iris_df['Target']=target 
-
-iris_df.head() 
-
- 
-
- 
-
-# Step 2: Standardize the features 
-
-#scaler = StandardScaler() 
-
-#features_standardized = scaler.fit_transform(features) 
-
-features_standardized = StandardScaler().fit_transform(features) 
-
-iris_std_df=pd.DataFrame(data=features_standardized,columns=['Sepal Length', 'Sepal Width', 'Petal Length', 'Petal Width']) 
-
-iris_std_df['Target']=target 
-
-iris_std_df.head() 
-
- 
-
-# Step 3: Apply PCA to reduce to 2 components 
-
-pca = PCA(n_components=2) 
-
-features_pca = pca.fit_transform(features_standardized) 
-
-# Step 4: Create a DataFrame for the reduced data 
-
-pca_df = pd.DataFrame(data=features_pca, columns=["Principal Component 1", "Principal Co mponent 2"]) 
-
-pca_df["Target"] = target 
-
-print(pca_df) 
-
- 
-
-# Step 5: Visualize the results plt.scatter(x,y,label,color,..) method 2 
-
-colors = ['red', 'green', 'blue'] 
-
-labels = iris.target_names 
-
-plt.figure(figsize=(8, 6)) 
-
-for i in range(len(colors)): 
-
-    plt.scatter(features_pca[target == i, 0], features_pca[target == i, 1], color=colors[i], label=labels[i]) 
-
-plt.xlabel('Principal Component 1') 
-
-plt.ylabel('Principal Component 2') 
-
-plt.title('PCA on Iris Dataset (Dimensionality Reduction)') 
-
-plt.legend() 
-
-plt.grid() 
-
+tau = 1.0  # Bandwidth parameter
+# Compute LWR predictions
+y_lwr = np.array([locally_weighted_regression(X, y, x_q, tau) for x_q in X_query])
+# Visualizing
+plt.figure(figsize=(10, 6))
+plt.scatter(X, y, color='blue', label='Data Points')
+plt.plot(X_query, y_lwr, color='red', label='Locally Weighted Regression')
+plt.title("Locally Weighted Regression")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.legend()
 plt.show()
+
